@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kronometre + Excel Süre</title>
+  <style>
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      background:#111; color:#fff;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif
+    }
+    .card{
+      width:min(520px,92vw); background:#1b1b1b;
+      border:1px solid #2a2a2a; border-radius:18px;
+      padding:22px; text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.35)
+    }
+    .time{
+      font-size:72px; margin:10px 0 6px;
+      font-variant-numeric:tabular-nums
+    }
+    .excel{
+      font-size:28px; margin:8px 0 18px; color:#cfcfcf
+    }
+    .hint{color:#9a9a9a;font-size:14px;margin-bottom:14px}
+
+    .row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+    .row-col{display:flex; flex-direction:column; gap:10px; align-items:center}
+
+    button{
+      border:0; border-radius:12px;
+      padding:12px 16px; font-size:16px; cursor:pointer;
+      background:#2f2f2f; color:#fff; min-width:140px
+    }
+    button.primary{background:#2563eb}
+    button.danger{background:#dc2626}
+    button:disabled{opacity:.55;cursor:not-allowed}
+
+    .opt{display:flex; gap:10px; justify-content:center; align-items:center; margin-top:14px; color:#cfcfcf}
+    input{
+      width:70px; padding:8px; border-radius:10px;
+      border:1px solid #333; background:#111; color:#fff; text-align:center
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 style="margin:0 0 6px;">Süre İçin Kronometre</h2>
+
+    <div class="time" id="display">00:00</div>
+    <div class="excel" id="excelDisplay">Excel: 0</div>
+    <div class="hint"></div>
+
+    <div class="row">
+      <button class="primary" id="startBtn">Başlat</button>
+      <button id="pauseBtn" disabled>Durdur</button>
+    </div>
+
+    <div class="row-col" style="margin-top:10px;">
+      <button class="danger" id="resetBtn">Sıfırla</button>
+    </div>
+
+    <div class="opt">
+      <span>Ondalık:</span>
+      <input id="decimals" type="number" min="0" max="6" value="2">
+      <span>(örn 2 → 0,83)</span>
+    </div>
+  </div>
+
+<script>
+  const display = document.getElementById("display");
+  const excelDisplay = document.getElementById("excelDisplay");
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const decimalsInput = document.getElementById("decimals");
+
+  let totalSeconds = 0;
+  let timer = null;
+
+  function formatMMSS(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function formatExcelValue(sec) {
+    const dec = Math.max(0, Math.min(6, parseInt(decimalsInput.value || "2", 10)));
+    const value = sec / 60;
+    return value.toFixed(dec).replace(".", ",");
+  }
+
+  function render() {
+    display.textContent = formatMMSS(totalSeconds);
+    excelDisplay.textContent = "Nurullah Gireceğin =>: " + formatExcelValue(totalSeconds);
+  }
+
+  function start() {
+    if (timer) return;
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+
+    timer = setInterval(() => {
+      totalSeconds++;
+      render();
+    }, 1000);
+  }
+
+  function pause() {
+    clearInterval(timer);
+    timer = null;
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+  }
+
+  function reset() {
+    clearInterval(timer);
+    timer = null;
+    totalSeconds = 0;
+    render();
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+  }
+
+  startBtn.addEventListener("click", start);
+  pauseBtn.addEventListener("click", pause);
+  resetBtn.addEventListener("click", reset);
+  decimalsInput.addEventListener("input", render);
+
+  render();
+</script>
+</body>
+</html>
